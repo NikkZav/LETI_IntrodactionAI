@@ -16,30 +16,43 @@ class Node:
 
     def __repr__(self):
         parent_id = self.parent.id if self.parent else None
-        return (f"Node ID: {self.id}, Parent ID: {parent_id}, Action: {self.action}, "
-                f"Path-Cost: {self.path_cost}, Depth: {self.depth}, State:\n{self.state_str()}")
+        return (f"Node ID: {self.id}, Parent ID: {parent_id}, "
+                f"Action: {self.action}, Path-Cost: {self.path_cost}, "
+                f"Depth: {self.depth}, State:\n{self.state_str()}")
 
     def state_str(self):
-        return '\n'.join(' '.join(str(cell) for cell in row) for row in self.state)
+        return '\n'.join(' '.join(str(cell) for cell in row)
+                         for row in self.state)
 
 
 def move(state, blank_pos, direction):
     new_state = [list(row) for row in state]  # Создаем копию состояния
     x, y = blank_pos
-    if direction == "up": x, y = x - 1, y
-    elif direction == "down": x, y = x + 1, y
-    elif direction == "left": x, y = x, y - 1
-    elif direction == "right": x, y = x, y + 1
-    new_state[blank_pos[0]][blank_pos[1]], new_state[x][y] = new_state[x][y], new_state[blank_pos[0]][blank_pos[1]]
+    if direction == "up":
+        x, y = x - 1, y
+    elif direction == "down":
+        x, y = x + 1, y
+    elif direction == "left":
+        x, y = x, y - 1
+    elif direction == "right":
+        x, y = x, y + 1
+
+    new_state[blank_pos[0]][blank_pos[1]], new_state[x][y] = \
+        new_state[x][y], new_state[blank_pos[0]][blank_pos[1]]
+
     return tuple(tuple(row) for row in new_state), (x, y)
 
 
 def get_actions(x, y):
     actions = []
-    if x > 0: actions.append("up")
-    if x < 2: actions.append("down")
-    if y > 0: actions.append("left")
-    if y < 2: actions.append("right")
+    if x > 0:
+        actions.append("up")
+    if x < 2:
+        actions.append("down")
+    if y > 0:
+        actions.append("left")
+    if y < 2:
+        actions.append("right")
     return actions
 
 
@@ -67,7 +80,8 @@ def dfs(start, goal):
             end_time = time.time()
             _, peak = tracemalloc.get_traced_memory()
             tracemalloc.stop()
-            print(f"Итераций потребовалось: {iterations}, Время выполнения: {end_time - start_time:.4f} секунд.")
+            print(f"Итераций потребовалось: {iterations}, "
+                  f"Время выполнения: {end_time - start_time:.4f} секунд.")
             print(f"Пиковое использование памяти: {peak / 1024**2:.4f} MB")
             print(f"Всего создано узлов: {Node.node_counter}")
             return current_node
@@ -77,20 +91,24 @@ def dfs(start, goal):
         for action in get_actions(*blank_pos):
             new_state, new_blank_pos = move(current_state, blank_pos, action)
             if new_state not in visited:
-                child_node = Node(new_state, current_node, action, current_node.path_cost + 1, current_node.depth + 1)
+                child_node = Node(new_state, current_node, action,
+                                  current_node.path_cost + 1,
+                                  current_node.depth + 1)
                 stack.append(child_node)
 
     end_time = time.time()
     _, peak = tracemalloc.get_traced_memory()
     tracemalloc.stop()  # Остановка отслеживания памяти
-    print(f"Итераций потребовалось: {iterations}, Время выполнения: {end_time - start_time:.4f} секунд.")
+    print(f"Итераций потребовалось: {iterations}, "
+          f"Время выполнения: {end_time - start_time:.4f} секунд.")
     print(f"Использование памяти: {peak / 1024**2:.4f} MB")
     print(f"Всего создано узлов: {Node.node_counter}")
     return None
 
 
 def interactive_print(steps):
-    choice = input("Выберите опцию вывода:\n1) Вывести все сразу\n2) Выводить каждый шаг после нажатия Enter\nВаш выбор: ")
+    choice = input("Выберите опцию вывода:\n1) Вывести все сразу\n2) "
+                   "Выводить каждый шаг после нажатия Enter\nВаш выбор: ")
     print("\nРешение:")
     if choice == "1":
         for step in steps:
@@ -119,8 +137,16 @@ def print_solution(node):
     interactive_print(path)
 
 
-start_state = ((0, 4, 3), (6, 2, 1), (7, 5, 8))
-goal_state = ((1, 2, 3), (4, 0, 5), (6, 7, 8))
+start_state = (
+    (0, 4, 3),
+    (6, 2, 1),
+    (7, 5, 8)
+)
+goal_state = (
+    (1, 2, 3),
+    (4, 0, 5),
+    (6, 7, 8)
+)
 
 solution_node = dfs(start_state, goal_state)
 print_solution(solution_node)
