@@ -69,7 +69,6 @@ class Problem:
         self.init_state = init_state
         self.goal_state = goal_state
         self.count_new_states = 0  # количество полученных новых состояний
-        self.count_created_nodes = 0  # количество вершин в памяти
         self.visited = set()
         self.mode = mode
 
@@ -87,7 +86,6 @@ class Problem:
                                   node.path_cost + 1,
                                   node.depth + 1,
                                   new_blank_pos)
-                self.count_created_nodes += 1
                 children.add(child_node)
             else:
                 self.message(f"Состояние \n{Node.state_str(new_state)}\n"
@@ -118,8 +116,7 @@ def general_search(problem: Problem, queuing_fn):
         if problem.goal_test(node.state):
             print("Решение найдено! Целевое состояние достигнуто.",
                   f"Время выполнения: {problem.count_new_states}",
-                  f"Использование памяти: {problem.count_created_nodes}",
-                  f"Всего создано узлов: {Node.node_counter}", sep='\n')
+                  f"Использование памяти: {Node.node_counter}", sep='\n')
             return node
 
         nodes = queuing_fn(nodes, problem.expand(node, node.operators))
