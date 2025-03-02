@@ -8,7 +8,7 @@ class Node:
                  blank_pos: tuple[int, int] | None = None):
         self.id = Node.node_counter
         Node.node_counter += 1
-        self.state = state
+        self.state: tuple[tuple[int | str]] = state
         self.blank_pos = blank_pos if blank_pos else self._get_blank_pos()
         self.operators = self._get_operators()
         self.parent = parent  # Ссылка на родительский узел
@@ -65,11 +65,11 @@ class Node:
 
 
 class Problem:
-    def __init__(self, init_state, goal_state, limit=1e9, mode='step'):
+    def __init__(self, init_state, goal_state, limit=1e9, mode='step') -> None:
         self.init_state = init_state
         self.goal_state = goal_state
         self.count_new_states = 0  # количество полученных новых состояний
-        self.visited = set()
+        self.visited: dict[tuple[tuple[int | str]], int] = {}
         self.limit = limit
         self.mode = mode
 
@@ -77,21 +77,26 @@ class Problem:
         return state == self.goal_state
 
     def expand(self, node, operators) -> set[Node]:
-        self.visited.add(node.state)
-        children = set()
+        self.visited[node.state] = node.depth
+        children: set[Node] = set()
+        if node.depth == self.limit:
+            self.message(f"Глубина вершины {node}\n"
+                         f"достигла лимита {self.limit} "
+                         "Поэтому дочерние вершины не раскрываются")
+            return children
+        if node.depth > self.limit:
+            raise Exception("Глубина вершины превысила лимит")
+
         for operator in operators:
             new_state, new_blank_pos = node.move(operator)
             self.count_new_states += 1
-            if new_state not in self.visited and node.depth + 1 <= self.limit:
+            if (new_state not in self.visited or
+                    self.visited[new_state] > node.depth + 1):
                 child_node = Node(new_state, node, operator,
                                   node.path_cost + 1,
                                   node.depth + 1,
                                   new_blank_pos)
                 children.add(child_node)
-            elif node.depth + 1 > self.limit:
-                self.message(f"Глубина этой вершины {node.depth + 1} "
-                             f"превышает лимит глубины {self.limit}\n"
-                             f"Состояние:\n{Node.state_str(new_state)}\n")
             else:
                 self.message(f"Состояние:\n{Node.state_str(new_state)}\n"
                              "уже посещено")
@@ -100,9 +105,10 @@ class Problem:
         return children
 
     def message(self, *args, **kwargs):
-        print("-"*40)
-        print(*args, **kwargs)
-        print("-"*40)
+        if self.mode != 'silent':
+            print("-"*40)
+            print(*args, **kwargs)
+            print("-"*40)
         if self.mode == 'step':
             input("\nНажмите Enter для продолжения...\n")
 
@@ -173,22 +179,30 @@ start_state = (
     (1, ' ', 6)
 )
 goal_state = (
-    (' ', 4, 2),
-    (7, 5, 8),
-    (3, 1, 6)
+    (1, 2, 3),
+    (4, ' ', 5),
+    (6, 7, 8)
 )
 
 
-choise = input("Выберите опцию работы программы:\n1) Вывести все сразу\n2) "
-               "Выводить каждый шаг после нажатия Enter\nВаш выбор: ")
-if choise == "1":
-    mode = "fast"
-elif choise == "2":
-    mode = "step"
+while True:
+    choise = input("Выберите опцию работы программы:\n"
+                   "0) Вывести только результат\n1) Вывести всё сразу\n"
+                   "2) Выводить каждый шаг после нажатия Enter\nВаш выбор: ")
+    if choise == "0":
+        mode = "silent"
+    elif choise == "1":
+        mode = "fast"
+    elif choise == "2":
+        mode = "step"
+    else:
+        print("Некорректный выбор. Попробуйте снова.")
+        continue
+    break
 
 try:
     solution_node = general_search(Problem(start_state, goal_state,
-                                           limit=5, mode=mode),
+                                           limit=19, mode=mode),
                                    dfs_limited)
     print_solution(solution_node)
 except Exception as e:

@@ -90,14 +90,15 @@ class Problem:
             else:
                 self.message(f"Состояние \n{Node.state_str(new_state)}\n"
                              "уже посещено")
-        self.message("Дбавленные после раскрытия новые вершины:",
+        self.message("Добавленные после раскрытия новые вершины:",
                      *children, sep='\n')
         return children
 
     def message(self, *args, **kwargs):
-        print("-"*40)
-        print(*args, **kwargs)
-        print("-"*40)
+        if self.mode != 'silent':
+            print("-"*40)
+            print(*args, **kwargs)
+            print("-"*40)
         if self.mode == 'step':
             input("\nНажмите Enter для продолжения...\n")
 
@@ -165,18 +166,26 @@ start_state = (
     (1, ' ', 6)
 )
 goal_state = (
-    (' ', 4, 2),
-    (7, 5, 8),
-    (3, 1, 6)
+    (1, 2, 3),
+    (4, ' ', 5),
+    (6, 7, 8)
 )
 
 
-choise = input("Выберите опцию работы программы:\n1) Вывести все сразу\n2) "
-               "Выводить каждый шаг после нажатия Enter\nВаш выбор: ")
-if choise == "1":
-    mode = "fast"
-elif choise == "2":
-    mode = "step"
+while True:
+    choise = input("Выберите опцию работы программы:\n"
+                   "0) Вывести только результат\n1) Вывести всё сразу\n"
+                   "2) Выводить каждый шаг после нажатия Enter\nВаш выбор: ")
+    if choise == "0":
+        mode = "silent"
+    elif choise == "1":
+        mode = "fast"
+    elif choise == "2":
+        mode = "step"
+    else:
+        print("Некорректный выбор. Попробуйте снова.")
+        continue
+    break
 
 try:
     solution_node = general_search(Problem(start_state, goal_state, mode=mode),
