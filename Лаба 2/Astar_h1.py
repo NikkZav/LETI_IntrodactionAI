@@ -65,23 +65,24 @@ class Node:
 
 
 class Problem:
-    def __init__(self, init_state, goal_state, mode='step'):
+    def __init__(self, init_state, goal_state, mode='step') -> None:
         self.init_state = init_state
         self.goal_state = goal_state
         self.count_new_states = 0  # количество полученных новых состояний
-        self.visited = set()
+        self.visited: dict[tuple[tuple[int | str]], int] = {}
         self.mode = mode
 
     def goal_test(self, state):
         return state == self.goal_state
 
     def expand(self, node, operators) -> list[Node]:
-        self.visited.add(node.state)
+        self.visited[node.state] = node.depth
         children = []
         for operator in operators:
             new_state, new_blank_pos = node.move(operator)
             self.count_new_states += 1
-            if new_state not in self.visited:
+            if (new_state not in self.visited or
+                    self.visited[new_state] > node.depth + 1):
                 child_node = Node(new_state, node, operator,
                                   node.path_cost + 1,
                                   node.depth + 1,
