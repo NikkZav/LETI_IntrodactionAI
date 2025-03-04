@@ -42,14 +42,14 @@ class Node:
     def _get_operators(self):
         x, y = self.blank_pos
         operators = []
-        if x > 0:
-            operators.append("up")
-        if x < 2:
-            operators.append("down")
         if y > 0:
             operators.append("left")
+        if x > 0:
+            operators.append("up")
         if y < 2:
             operators.append("right")
+        if x < 2:
+            operators.append("down")
         return operators
 
     def __repr__(self):
@@ -75,9 +75,9 @@ class Problem:
     def goal_test(self, state):
         return state == self.goal_state
 
-    def expand(self, node, operators) -> set[Node]:
+    def expand(self, node, operators) -> list[Node]:
         self.visited.add(node.state)
-        children = set()
+        children = []
         for operator in operators:
             new_state, new_blank_pos = node.move(operator)
             self.count_new_states += 1
@@ -86,7 +86,7 @@ class Problem:
                                   node.path_cost + 1,
                                   node.depth + 1,
                                   new_blank_pos)
-                children.add(child_node)
+                children.append(child_node)
             else:
                 self.message(f"Состояние \n{Node.state_str(new_state)}\n"
                              "уже посещено")
@@ -124,7 +124,7 @@ def general_search(problem: Problem, queuing_fn):
         problem.message("Кайма после раскрытия вершины:", *nodes, sep='\n')
 
 
-def bfs(nodes: deque[Node], children: set[Node]):
+def bfs(nodes: deque[Node], children: list[Node]):
     nodes.extend(children)
     return nodes
 
